@@ -24,6 +24,7 @@
     .time-badge { font-size: 12px; color: #555; margin-top: 4px; display: block; }
     .status-badge { font-size: 12px; color: #28a745; font-weight: bold; margin-top: 4px; display: block; }
 
+    /* BUTTON STYLES */
     .btn { width: 100%; padding: 13px; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     .btn-primary { background: #1a73e8; color: #fff; }
     .btn-success { background: #28a745; color: #fff; }
@@ -47,13 +48,13 @@
   <div id="login-section" class="card">
     <h3 style="margin-bottom: 15px; color: #333;">Login</h3>
     
-    <label>Employee ID</label>
+    <label for="emp-id">Employee ID</label>
     <input type="text" id="emp-id" placeholder="Enter Employee ID">
 
-    <label>Password</label>
+    <label for="password">Password</label>
     <input type="password" id="password" placeholder="Enter Password">
 
-   <button id="login-btn" type="button" onclick="login()">Log In</button>
+    <button id="login-btn" class="btn btn-primary" type="button" onclick="login()">Log In</button>
   </div>
 
   <!-- DASHBOARD SECTION -->
