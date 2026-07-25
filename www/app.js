@@ -117,7 +117,7 @@ function onSubstationChange() {
   }
 }
 
-function handleAttendance(type) {
+async function handleAttendance(type) {
   const sub = document.getElementById("substation-select").value;
   const feeder = document.getElementById("feeder-select").value;
 
@@ -125,6 +125,33 @@ function handleAttendance(type) {
     alert("Please select a Substation first.");
     return;
   }
+
+  const savedUser = JSON.parse(localStorage.getItem("rgfms_user") || "{}");
+
+  // Send log to Google Sheets via API
+  const res = await apiCall("logAttendance", {
+    employeeId: savedUser.employeeId,
+    employeeName: savedUser.name,
+    type: type,
+    substation: sub,
+    feeder: feeder
+  });
+
+  if (res && res.success) {
+    const now = new Date();
+    const timestamp = `${now.toLocaleDateString([], { day: '2-digit', month: 'short' })} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    const statusText = `${type} at ${timestamp} (${sub}${feeder ? ' - ' + feeder : ''})`;
+
+    document.getElementById("checkin-status").innerText = statusText;
+    if (savedUser.employeeId) {
+      localStorage.setItem("last_checkin_" + savedUser.employeeId, statusText);
+    }
+
+    alert(`${type} logged successfully into Google Sheets!`);
+  } else {
+    alert("Failed to save log: " + (res.message || "Network error"));
+  }
+}
 
   const now = new Date();
   const timestamp = `${now.toLocaleDateString([], { day: '2-digit', month: 'short' })} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
