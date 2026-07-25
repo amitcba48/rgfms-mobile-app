@@ -28,19 +28,32 @@ function startLiveClock() {
 }
 
 async function apiCall(action, payload = {}) {
+  const API_URL = "https://script.google.com/macros/s/AKfycbzBbst8f-GoGhM4UEnrO7UpqkjtB6DTl7ip-9WlZyfPTWrLLzkZaeWrRKhvnWrbCikK/exec"; // Ensure this matches your deployment URL
+
+  const requestBody = {
+    action: action,
+    ...payload
+  };
+
   try {
-    const res = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: "POST",
+      // Using text/plain avoids CORS preflight OPTIONS request issues on mobile
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
-      body: JSON.stringify({ action, ...payload }),
-      redirect: "follow"
+      body: JSON.stringify(requestBody)
     });
-    return await res.json();
-  } catch (err) {
-    console.error("API Error:", err);
-    return { success: false, message: "Network connection issue" };
+
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("API Call Error:", error);
+    return { success: false, message: "Network connection error or request timed out." };
   }
 }
 
