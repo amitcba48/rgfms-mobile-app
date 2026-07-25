@@ -1,0 +1,13 @@
+{
+  "name": "rgfms-app",
+  "version": "1.0.0",
+  "description": "Rudra Geotech Field Management System",
+  "scripts": {
+    "build": "echo 'Web assets ready'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}
