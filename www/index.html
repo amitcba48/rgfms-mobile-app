@@ -18,7 +18,11 @@
     input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; outline: none; background: #fff; }
     input:focus, select:focus { border-color: #1a73e8; }
 
-    .user-info { background: #e8f0fe; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; color: #1a73e8; }
+    /* USER PROFILE & TIMESTAMPS */
+    .user-info { background: #e8f0fe; padding: 14px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #1a73e8; }
+    .user-name { font-size: 16px; font-weight: bold; color: #1a73e8; }
+    .time-badge { font-size: 12px; color: #555; margin-top: 4px; display: block; }
+    .status-badge { font-size: 12px; color: #28a745; font-weight: bold; margin-top: 4px; display: block; }
 
     .btn { width: 100%; padding: 13px; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     .btn-primary { background: #1a73e8; color: #fff; }
@@ -49,18 +53,20 @@
     <label>Password</label>
     <input type="password" id="password" placeholder="Enter Password">
 
-    <button class="btn btn-primary" onclick="login()">Log In</button>
+    <button id="login-btn" class="btn btn-primary" onclick="login()">Log In</button>
   </div>
 
   <!-- DASHBOARD SECTION -->
   <div id="dashboard-section" class="card hidden">
-    <!-- 1. Top Section: User Info -->
+    <!-- User Info & Timestamps -->
     <div class="user-info">
-      <div><strong>Logged in as:</strong> <span id="user-name">--</span></div>
-      <div style="margin-top: 4px; font-size: 13px; color: #555;"><strong>Role:</strong> <span id="user-role">--</span></div>
+      <div class="user-name" id="user-name">--</div>
+      <div style="font-size: 13px; color: #666; margin-top: 2px;"><strong>Role:</strong> <span id="user-role">--</span></div>
+      <span class="time-badge">🕒 <strong>Current Time:</strong> <span id="current-time">--:--:--</span></span>
+      <span class="status-badge">📍 <strong>Check-In Status:</strong> <span id="checkin-status">Not Checked In</span></span>
     </div>
 
-    <!-- 2. Middle Section: Substation & Feeder Details -->
+    <!-- Substation & Feeder Dropdowns -->
     <label for="substation-select">Select Substation</label>
     <select id="substation-select" onchange="onSubstationChange()">
       <option value="">-- Loading Substations --</option>
@@ -71,7 +77,7 @@
       <option value="">-- Select Substation First --</option>
     </select>
 
-    <!-- 3. Bottom Section: Check-In / Check-Out Actions -->
+    <!-- Action Buttons -->
     <div class="action-row">
       <button class="btn btn-success" onclick="handleAttendance('Check-In')">Check In</button>
       <button class="btn btn-warning" onclick="handleAttendance('Check-Out')">Check Out</button>
