@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzBbst8f-GoGhM4UEnrO7UpqkjtB6DTl7ip-9WlZyfPTWrLLzkZaeWrRKhvnWrbCikK/exec"; 
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; 
 
 let masterData = {};
 
@@ -13,12 +13,17 @@ async function apiCall(action, payload = {}) {
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({ action, ...payload })
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({ action, ...payload }),
+      redirect: "follow"
     });
+    
     return await res.json();
   } catch (err) {
-    alert("Network or Connection Error. Check connection.");
-    return { success: false };
+    console.error("API Call Error:", err);
+    return { success: false, message: "Network connection issue" };
   }
 }
 
@@ -33,11 +38,11 @@ async function login() {
 
   const res = await apiCall("login", { employeeId, password });
 
-  if (res.success) {
+  if (res && res.success) {
     localStorage.setItem("rgfms_user", JSON.stringify(res.user));
     showDashboard(res.user);
   } else {
-    alert(res.message || "Invalid credentials");
+    alert(res.message || "Invalid credentials. Please check Employee ID and Password.");
   }
 }
 
@@ -48,13 +53,13 @@ async function showDashboard(user) {
   document.getElementById("user-name").innerText = user.name || user.employeeId;
   document.getElementById("user-role").innerText = user.designation || "Staff";
 
-  // Load Substation dropdown values from Sheets
+  // Silent load of master data without popping up credential alerts
   fetchMasterData();
 }
 
 async function fetchMasterData() {
   const res = await apiCall("getMasterData");
-  if (res.success) {
+  if (res && res.success && res.data) {
     masterData = res.data;
     const subSelect = document.getElementById("substation-select");
     subSelect.innerHTML = '<option value="">-- Select Substation --</option>';
@@ -62,8 +67,6 @@ async function fetchMasterData() {
     Object.keys(masterData).forEach(sub => {
       subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
     });
-  } else {
-    alert("Failed to load Substation data");
   }
 }
 
@@ -89,7 +92,7 @@ function handleAttendance(type) {
     return;
   }
 
-  alert(`${type} successful for Substation: ${sub} ${feeder ? '(' + feeder + ')' : ''}`);
+  alert(`${type} recorded successfully for ${sub} ${feeder ? '(' + feeder + ')' : ''}`);
 }
 
 function logout() {
