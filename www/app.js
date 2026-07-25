@@ -28,8 +28,6 @@ function startLiveClock() {
 }
 
 async function apiCall(action, payload = {}) {
-  const API_URL = "https://script.google.com/macros/s/AKfycbzBbst8f-GoGhM4UEnrO7UpqkjtB6DTl7ip-9WlZyfPTWrLLzkZaeWrRKhvnWrbCikK/exec"; // Ensure this matches your deployment URL
-
   const requestBody = {
     action: action,
     ...payload
@@ -38,7 +36,8 @@ async function apiCall(action, payload = {}) {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      // Using text/plain avoids CORS preflight OPTIONS request issues on mobile
+      mode: "cors",
+      redirect: "follow",
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
@@ -67,7 +66,6 @@ async function login() {
     return;
   }
 
-  // Visual Feedback for Fast UX
   loginBtn.innerText = "Authenticating...";
   loginBtn.disabled = true;
 
@@ -91,16 +89,13 @@ async function showDashboard(user) {
   document.getElementById("user-name").innerText = user.name || user.employeeId;
   document.getElementById("user-role").innerText = user.designation || "Staff";
 
-  // Start the live ticking clock under name
   startLiveClock();
 
-  // Load last saved check-in time if present
   const lastCheckIn = localStorage.getItem("last_checkin_" + user.employeeId);
   if (lastCheckIn) {
     document.getElementById("checkin-status").innerText = lastCheckIn;
   }
 
-  // Pre-fetch Master Data immediately
   fetchMasterData();
 }
 
@@ -134,6 +129,13 @@ async function handleAttendance(type) {
   const sub = document.getElementById("substation-select").value;
   const feeder = document.getElementById("feeder-select").value;
 
+  // Safely grab feeder status and remarks if they exist in HTML
+  const statusElem = document.getElementById("feeder-status");
+  const remarksElem = document.getElementById("status-remarks");
+
+  const feederStatus = statusElem ? statusElem.value : (type === "Check-Out" ? "Completed" : "Started");
+  const remarks = remarksElem ? remarksElem.value.trim() : "";
+
   if (!sub) {
     alert("Please select a Substation first.");
     return;
@@ -141,27 +143,51 @@ async function handleAttendance(type) {
 
   const savedUser = JSON.parse(localStorage.getItem("rgfms_user") || "{}");
 
-  // Send log to Google Sheets via API
+  // Attempt GPS coordinates grab with short timeout
+  let lat = "";
+  let lng = "";
+
+  try {
+    const position = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error("Geolocation unsupported"));
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      });
+    });
+    lat = position.coords.latitude;
+    lng = position.coords.longitude;
+  } catch (geoErr) {
+    console.warn("GPS Location fetch skipped/failed:", geoErr.message);
+  }
+
+  // Send request to Google Sheets
   const res = await apiCall("logAttendance", {
     employeeId: savedUser.employeeId,
     employeeName: savedUser.name,
     type: type,
     substation: sub,
-    feeder: feeder
+    feeder: feeder,
+    feederStatus: feederStatus,
+    remarks: remarks,
+    latitude: lat,
+    longitude: lng
   });
 
   if (res && res.success) {
     const now = new Date();
     const timestamp = `${now.toLocaleDateString([], { day: '2-digit', month: 'short' })} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    const statusText = `${type} at ${timestamp} (${sub}${feeder ? ' - ' + feeder : ''})`;
+    const statusText = `${feederStatus} at ${timestamp} (${sub}${feeder ? ' - ' + feeder : ''})`;
 
     document.getElementById("checkin-status").innerText = statusText;
     if (savedUser.employeeId) {
       localStorage.setItem("last_checkin_" + savedUser.employeeId, statusText);
     }
 
-    // Clean user notification
-    alert(`${type} Successfully!`);
+    if (remarksElem) remarksElem.value = ""; // Clear remarks after submit
+
+    alert(`Recorded ${type} (${feederStatus}) successfully!`);
   } else {
     alert("Failed to record " + type.toLowerCase() + ": " + (res.message || "Network error"));
   }
