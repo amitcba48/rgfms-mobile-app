@@ -147,9 +147,10 @@ async function handleAttendance(type) {
       localStorage.setItem("last_checkin_" + savedUser.employeeId, statusText);
     }
 
-    alert(`${type} logged successfully into Google Sheets!`);
+    // Clean user notification
+    alert(`${type} Successfully!`);
   } else {
-    alert("Failed to save log: " + (res.message || "Network error"));
+    alert("Failed to record " + type.toLowerCase() + ": " + (res.message || "Network error"));
   }
 }
 
