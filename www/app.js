@@ -30,13 +30,22 @@ function startLiveClock() {
 /**
  * Native GPS helper (Runs without any NPM or local software installation)
  */
+/**
+ * Fast & Reliable GPS helper with fallback for WebViews & HTTP
+ */
 function getCurrentLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.warn("Geolocation is not supported by this browser.");
+      alert("Geolocation is not supported by your device browser.");
       resolve({ lat: "", lng: "", mapLink: "Location N/A" });
       return;
     }
+
+    const options = {
+      enableHighAccuracy: false, // Set to false so Wi-Fi/Mobile towers respond INSTANTLY
+      timeout: 10000,            // Increased to 10 seconds
+      maximumAge: 30000          // Use cached position if recorded within last 30 seconds
+    };
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -49,14 +58,21 @@ function getCurrentLocation() {
         });
       },
       (error) => {
-        console.warn("GPS Error / Permission Denied:", error.message);
+        console.warn("GPS Error Details:", error);
+        
+        let msg = "Could not get location.";
+        if (error.code === 1) {
+          msg = "Location permission denied. Please allow location access in your browser/app settings.";
+        } else if (error.code === 2) {
+          msg = "Position unavailable. Please turn ON Device Location (GPS).";
+        } else if (error.code === 3) {
+          msg = "Location request timed out.";
+        }
+        
+        alert("GPS Notice: " + msg);
         resolve({ lat: "", lng: "", mapLink: "Location N/A" });
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000, // 5-second timeout safeguard
-        maximumAge: 0
-      }
+      options
     );
   });
 }
