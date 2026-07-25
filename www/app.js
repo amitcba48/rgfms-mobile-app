@@ -27,6 +27,40 @@ function startLiveClock() {
   clockInterval = setInterval(updateClock, 1000);
 }
 
+/**
+ * Native GPS helper (Runs without any NPM or local software installation)
+ */
+function getCurrentLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not supported by this browser.");
+      resolve({ lat: "", lng: "", mapLink: "Location N/A" });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        resolve({
+          lat: lat,
+          lng: lng,
+          mapLink: `https://maps.google.com/?q=${lat},${lng}`
+        });
+      },
+      (error) => {
+        console.warn("GPS Error / Permission Denied:", error.message);
+        resolve({ lat: "", lng: "", mapLink: "Location N/A" });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000, // 5-second timeout safeguard
+        maximumAge: 0
+      }
+    );
+  });
+}
+
 async function apiCall(action, payload = {}) {
   const requestBody = {
     action: action,
@@ -128,8 +162,6 @@ function onSubstationChange() {
 async function handleAttendance(type) {
   const sub = document.getElementById("substation-select").value;
   const feeder = document.getElementById("feeder-select").value;
-
-  // Safely grab feeder status and remarks if they exist in HTML
   const statusElem = document.getElementById("feeder-status");
   const remarksElem = document.getElementById("status-remarks");
 
@@ -143,24 +175,8 @@ async function handleAttendance(type) {
 
   const savedUser = JSON.parse(localStorage.getItem("rgfms_user") || "{}");
 
-  // Attempt GPS coordinates grab with short timeout
-  let lat = "";
-  let lng = "";
-
-  try {
-    const position = await new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error("Geolocation unsupported"));
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      });
-    });
-    lat = position.coords.latitude;
-    lng = position.coords.longitude;
-  } catch (geoErr) {
-    console.warn("GPS Location fetch skipped/failed:", geoErr.message);
-  }
+  // 📍 Fetch device GPS coordinates
+  const location = await getCurrentLocation();
 
   // Send request to Google Sheets
   const res = await apiCall("logAttendance", {
@@ -171,8 +187,8 @@ async function handleAttendance(type) {
     feeder: feeder,
     feederStatus: feederStatus,
     remarks: remarks,
-    latitude: lat,
-    longitude: lng
+    latitude: location.lat,
+    longitude: location.lng
   });
 
   if (res && res.success) {
@@ -185,47 +201,12 @@ async function handleAttendance(type) {
       localStorage.setItem("last_checkin_" + savedUser.employeeId, statusText);
     }
 
-    if (remarksElem) remarksElem.value = ""; // Clear remarks after submit
+    if (remarksElem) remarksElem.value = "";
 
-    alert(`Recorded ${type} (${feederStatus}) successfully!`);
+    alert(`Recorded ${type} (${feederStatus}) successfully!\nLocation: ${location.lat ? location.lat + ', ' + location.lng : 'N/A'}`);
   } else {
     alert("Failed to record " + type.toLowerCase() + ": " + (res.message || "Network error"));
   }
-}
-
-/**
- * Browser-native GPS fetch (No npm or local installation required)
- */
-function getCurrentLocation() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      console.warn("Geolocation is not supported by this browser.");
-      resolve({ lat: "", lng: "", mapLink: "Location N/A" });
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude.toFixed(6);
-        const lng = position.coords.longitude.toFixed(6);
-        resolve({
-          lat: lat,
-          lng: lng,
-          mapLink: `https://maps.google.com/?q=${lat},${lng}`
-        });
-      },
-      (error) => {
-        console.warn("GPS Error / Denied:", error.message);
-        // Fallback gracefully if GPS is disabled or timed out
-        resolve({ lat: "", lng: "", mapLink: "Location N/A" });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000, // 5-second timeout safeguard
-        maximumAge: 0
-      }
-    );
-  });
 }
 
 function logout() {
