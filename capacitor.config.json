@@ -1,0 +1,6 @@
+{
+  "appId": "com.rudrageotech.rgfms",
+  "appName": "RGFMS",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
