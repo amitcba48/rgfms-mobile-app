@@ -153,21 +153,6 @@ async function handleAttendance(type) {
   }
 }
 
-  const now = new Date();
-  const timestamp = `${now.toLocaleDateString([], { day: '2-digit', month: 'short' })} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  
-  const savedUser = JSON.parse(localStorage.getItem("rgfms_user") || "{}");
-  const statusText = `${type} at ${timestamp} (${sub}${feeder ? ' - ' + feeder : ''})`;
-
-  // Display Check-In details below the name
-  document.getElementById("checkin-status").innerText = statusText;
-  if (savedUser.employeeId) {
-    localStorage.setItem("last_checkin_" + savedUser.employeeId, statusText);
-  }
-
-  alert(`${type} recorded successfully!`);
-}
-
 function logout() {
   if (clockInterval) clearInterval(clockInterval);
   localStorage.removeItem("rgfms_user");
