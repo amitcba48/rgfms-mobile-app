@@ -3,43 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RGFMS Mobile App</title>
+  <title>RGFMS Mobile</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     body { background: #f4f6f9; color: #333; padding: 15px; }
-    .card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    h2 { color: #1a73e8; margin-bottom: 12px; font-size: 20px; }
-    label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; color: #555; }
-    input, select, button { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-    button { background: #1a73e8; color: #fff; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
-    button:active { background: #1557b0; }
-    .btn-danger { background: #dc3545; }
-    .hidden { display: none; }
-    .user-info { font-size: 14px; margin-bottom: 15px; background: #e8f0fe; padding: 10px; border-radius: 6px; }
+
+    .header-title { text-align: center; margin-bottom: 20px; }
+    .header-title h2 { color: #1a73e8; font-size: 22px; }
+    .header-title p { color: #666; font-size: 13px; margin-top: 4px; }
+
+    .card { background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
+    
+    label { display: block; font-weight: bold; font-size: 13px; color: #444; margin-top: 12px; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; outline: none; background: #fff; }
+    input:focus, select:focus { border-color: #1a73e8; }
+
+    .user-info { background: #e8f0fe; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; color: #1a73e8; }
+
+    .btn { width: 100%; padding: 13px; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-success { background: #28a745; color: #fff; }
+    .btn-warning { background: #fd7e14; color: #fff; }
+    .btn-danger { background: #dc3545; color: #fff; margin-top: 25px; }
+
+    .action-row { display: flex; gap: 10px; margin-top: 10px; }
+    .action-row .btn { flex: 1; }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
+  <div class="header-title">
+    <h2>RGFMS Mobile</h2>
+    <p>Rudra Geotech Field Management System</p>
+  </div>
+
   <!-- LOGIN SECTION -->
   <div id="login-section" class="card">
-    <h2>RGFMS Login</h2>
+    <h3 style="margin-bottom: 15px; color: #333;">Login</h3>
+    
     <label>Employee ID</label>
     <input type="text" id="emp-id" placeholder="Enter Employee ID">
-    
+
     <label>Password</label>
     <input type="password" id="password" placeholder="Enter Password">
-    
-    <button onclick="login()">Login</button>
+
+    <button class="btn btn-primary" onclick="login()">Log In</button>
   </div>
 
   <!-- DASHBOARD SECTION -->
   <div id="dashboard-section" class="card hidden">
-    <h2>Substation Portal</h2>
+    <!-- 1. Top Section: User Info -->
     <div class="user-info">
-      Logged in as: <strong id="user-name">--</strong> (<span id="user-role">--</span>)
+      <div><strong>Logged in as:</strong> <span id="user-name">--</span></div>
+      <div style="margin-top: 4px; font-size: 13px; color: #555;"><strong>Role:</strong> <span id="user-role">--</span></div>
     </div>
 
-    <!-- Substation & Feeder Selection -->
+    <!-- 2. Middle Section: Substation & Feeder Details -->
     <label for="substation-select">Select Substation</label>
     <select id="substation-select" onchange="onSubstationChange()">
       <option value="">-- Loading Substations --</option>
@@ -50,13 +71,13 @@
       <option value="">-- Select Substation First --</option>
     </select>
 
-    <!-- Actions -->
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-      <button onclick="handleAttendance('Check-In')" style="background: #28a745;">Check In</button>
-      <button onclick="handleAttendance('Check-Out')" style="background: #fd7e14;">Check Out</button>
+    <!-- 3. Bottom Section: Check-In / Check-Out Actions -->
+    <div class="action-row">
+      <button class="btn btn-success" onclick="handleAttendance('Check-In')">Check In</button>
+      <button class="btn btn-warning" onclick="handleAttendance('Check-Out')">Check Out</button>
     </div>
 
-    <button onclick="logout()" class="btn-danger">Logout</button>
+    <button class="btn btn-danger" onclick="logout()">Sign Out</button>
   </div>
 
   <script src="app.js"></script>
