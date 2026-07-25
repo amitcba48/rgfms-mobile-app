@@ -11,27 +11,26 @@ jobs:
 
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install Capacitor & Dependencies
-        run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init RGFMS com.rudrageotech.rgfms --web-dir www
-          npx cap add android
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Sync Web Code to Android
+      - name: Add Android Platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Build Android APK
