@@ -28,7 +28,7 @@ function startLiveClock() {
 }
 
 /**
- * Fast & Reliable GPS helper with detailed error alerts
+ * Native Device GPS Location Provider
  */
 function getCurrentLocation() {
   return new Promise((resolve) => {
@@ -185,7 +185,7 @@ async function handleAttendance(type) {
 
   const savedUser = JSON.parse(localStorage.getItem("rgfms_user") || "{}");
 
-  // 📍 Fetch device GPS coordinates
+  // Fetch device GPS coordinates
   const location = await getCurrentLocation();
 
   // Send request to Google Sheets
