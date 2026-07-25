@@ -193,6 +193,41 @@ async function handleAttendance(type) {
   }
 }
 
+/**
+ * Browser-native GPS fetch (No npm or local installation required)
+ */
+function getCurrentLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not supported by this browser.");
+      resolve({ lat: "", lng: "", mapLink: "Location N/A" });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        resolve({
+          lat: lat,
+          lng: lng,
+          mapLink: `https://maps.google.com/?q=${lat},${lng}`
+        });
+      },
+      (error) => {
+        console.warn("GPS Error / Denied:", error.message);
+        // Fallback gracefully if GPS is disabled or timed out
+        resolve({ lat: "", lng: "", mapLink: "Location N/A" });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000, // 5-second timeout safeguard
+        maximumAge: 0
+      }
+    );
+  });
+}
+
 function logout() {
   if (clockInterval) clearInterval(clockInterval);
   localStorage.removeItem("rgfms_user");
