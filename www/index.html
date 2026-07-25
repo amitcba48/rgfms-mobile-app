@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RGFMS Mobile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f6f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .app-header { background: #0d6efd; color: white; padding: 15px; text-align: center; border-radius: 0 0 15px 15px; }
+    .card-custom { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 15px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN VIEW -->
+  <div id="loginView" class="container mt-5">
+    <div class="card card-custom p-4">
+      <h3 class="text-center text-primary fw-bold mb-3">RGFMS Login</h3>
+      <div id="loginAlert" class="alert alert-danger hidden" role="alert"></div>
+      <div class="mb-3">
+        <label class="form-label font-weight-bold">Employee ID</label>
+        <input type="text" id="empIdInput" class="form-control" placeholder="e.g. RG001">
+      </div>
+      <div class="mb-3">
+        <label class="form-label font-weight-bold">Password</label>
+        <input type="password" id="passwordInput" class="form-control" placeholder="••••••••">
+      </div>
+      <button onclick="handleLogin()" class="btn btn-primary w-100 py-2 fw-bold">Sign In</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboardView" class="hidden">
+    <div class="app-header shadow-sm">
+      <h4 class="m-0 fw-bold">RGFMS</h4>
+      <small>Rudra Geotech Field System</small>
+    </div>
+
+    <div class="container mt-3">
+      <!-- USER PROFILE CARD -->
+      <div class="card card-custom p-3 text-center">
+        <h4 id="userDisplayName" class="fw-bold mb-1">Loading...</h4>
+        <p id="userDisplayRole" class="text-muted small mb-2">---</p>
+        <span class="badge bg-light text-dark p-2 border" id="liveClock">--:--:--</span>
+      </div>
+
+      <!-- STATUS REPORT CARD -->
+      <div class="card card-custom p-3">
+        <h5 class="fw-bold text-primary mb-3">⚡ Substation & Feeder Status</h5>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">Select / Search Substation *</label>
+          <input class="form-control" list="substationList" id="substationInput" placeholder="Type to search..." onchange="onSubstationChange(this.value)">
+          <datalist id="substationList"></datalist>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Select / Search Feeder *</label>
+          <input class="form-control" list="feederList" id="feederInput" placeholder="Type to search...">
+          <datalist id="feederList"></datalist>
+        </div>
+
+        <button class="btn btn-success w-100 fw-bold py-2 mt-2" onclick="submitStatusReport()">Submit Report</button>
+      </div>
+
+      <button onclick="handleLogout()" class="btn btn-outline-danger btn-sm w-100 mb-4">Logout</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
