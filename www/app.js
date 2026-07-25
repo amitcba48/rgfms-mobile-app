@@ -36,16 +36,10 @@ function startLiveClock() {
 function getCurrentLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your device browser.");
+      alert("Geolocation is not supported by this browser.");
       resolve({ lat: "", lng: "", mapLink: "Location N/A" });
       return;
     }
-
-    const options = {
-      enableHighAccuracy: false, // Set to false so Wi-Fi/Mobile towers respond INSTANTLY
-      timeout: 10000,            // Increased to 10 seconds
-      maximumAge: 30000          // Use cached position if recorded within last 30 seconds
-    };
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -57,6 +51,21 @@ function getCurrentLocation() {
           mapLink: `https://maps.google.com/?q=${lat},${lng}`
         });
       },
+      (error) => {
+        console.warn("GPS Error Details:", error);
+        if (error.code === error.PERMISSION_DENIED) {
+          alert("Location access is required for attendance. Please allow location access when prompted.");
+        }
+        resolve({ lat: "", lng: "", mapLink: "Location N/A" });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
+}
       (error) => {
         console.warn("GPS Error Details:", error);
         
