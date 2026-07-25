@@ -1,122 +1,98 @@
-// REPLACE THIS URL WITH YOUR PUBLISHED APPS SCRIPT WEB APP API URL
-const API_URL = "https://script.google.com/macros/s/AKfycbzBbst8f-GoGhM4UEnrO7UpqkjtB6DTl7ip-9WlZyfPTWrLLzkZaeWrRKhvnWrbCikK/exec";
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; 
 
-let masterSubstationData = {};
+let masterData = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-  startClock();
-  checkSession();
+  const savedUser = localStorage.getItem("rgfms_user");
+  if (savedUser) {
+    showDashboard(JSON.parse(savedUser));
+  }
 });
 
-function startClock() {
-  setInterval(() => {
-    const now = new Date();
-    const clockEl = document.getElementById("liveClock");
-    if (clockEl) clockEl.innerText = now.toLocaleTimeString();
-  }, 1000);
-}
-
-function checkSession() {
-  const user = JSON.parse(localStorage.getItem("rgfms_user"));
-  if (user) {
-    showDashboard(user);
-  } else {
-    showLogin();
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (err) {
+    alert("Network or Connection Error. Check connection.");
+    return { success: false };
   }
 }
 
-function showLogin() {
-  document.getElementById("loginView").classList.remove("hidden");
-  document.getElementById("dashboardView").classList.add("hidden");
-}
+async function login() {
+  const employeeId = document.getElementById("emp-id").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-function showDashboard(user) {
-  document.getElementById("loginView").classList.add("hidden");
-  document.getElementById("dashboardView").classList.remove("hidden");
-
-  // Render Employee Name & Designation (Col E)
-  document.getElementById("userDisplayName").innerText = user.name || "Employee";
-  document.getElementById("userDisplayRole").innerText = `${user.designation || 'Field Staff'} (${user.employeeId})`;
-
-  fetchMasterData();
-}
-
-async function handleLogin() {
-  const empId = document.getElementById("empIdInput").value.trim();
-  const password = document.getElementById("passwordInput").value.trim();
-  const alertEl = document.getElementById("loginAlert");
-
-  if (!empId || !password) {
-    alertEl.innerText = "Please fill in all fields.";
-    alertEl.classList.remove("hidden");
+  if (!employeeId || !password) {
+    alert("Please enter Employee ID and Password");
     return;
   }
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "login", employeeId: empId, password: password })
-    });
-    
-    const data = await res.json();
+  const res = await apiCall("login", { employeeId, password });
 
-    if (data.success) {
-      alertEl.classList.add("hidden");
-      localStorage.setItem("rgfms_user", JSON.stringify(data.user));
-      showDashboard(data.user);
-    } else {
-      alertEl.innerText = data.message || "Invalid Login";
-      alertEl.classList.remove("hidden");
-    }
-  } catch (err) {
-    alertEl.innerText = "Connection error. Check API URL.";
-    alertEl.classList.remove("hidden");
+  if (res.success) {
+    localStorage.setItem("rgfms_user", JSON.stringify(res.user));
+    showDashboard(res.user);
+  } else {
+    alert(res.message || "Invalid credentials");
   }
+}
+
+async function showDashboard(user) {
+  document.getElementById("login-section").classList.add("hidden");
+  document.getElementById("dashboard-section").classList.remove("hidden");
+  
+  document.getElementById("user-name").innerText = user.name || user.employeeId;
+  document.getElementById("user-role").innerText = user.designation || "Staff";
+
+  // Load Substation dropdown values from Sheets
+  fetchMasterData();
 }
 
 async function fetchMasterData() {
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "getMasterData" })
-    });
-    const data = await res.json();
+  const res = await apiCall("getMasterData");
+  if (res.success) {
+    masterData = res.data;
+    const subSelect = document.getElementById("substation-select");
+    subSelect.innerHTML = '<option value="">-- Select Substation --</option>';
 
-    if (data.success) {
-      masterSubstationData = data.data;
-      populateSubstations(Object.keys(masterSubstationData));
-    }
-  } catch (err) {
-    console.error("Master data error:", err);
+    Object.keys(masterData).forEach(sub => {
+      subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+    });
+  } else {
+    alert("Failed to load Substation data");
   }
 }
 
-function populateSubstations(substations) {
-  const listEl = document.getElementById("substationList");
-  listEl.innerHTML = "";
-  substations.forEach(sub => {
-    const opt = document.createElement("option");
-    opt.value = sub;
-    listEl.appendChild(opt);
-  });
+function onSubstationChange() {
+  const subSelect = document.getElementById("substation-select").value;
+  const feederSelect = document.getElementById("feeder-select");
+
+  feederSelect.innerHTML = '<option value="">-- Select Feeder --</option>';
+
+  if (subSelect && masterData[subSelect]) {
+    masterData[subSelect].forEach(feeder => {
+      feederSelect.innerHTML += `<option value="${feeder}">${feeder}</option>`;
+    });
+  }
 }
 
-function onSubstationChange(subName) {
-  const listEl = document.getElementById("feederList");
-  listEl.innerHTML = "";
-  const feeders = masterSubstationData[subName] || [];
-  feeders.forEach(f => {
-    const opt = document.createElement("option");
-    opt.value = f;
-    listEl.appendChild(opt);
-  });
+function handleAttendance(type) {
+  const sub = document.getElementById("substation-select").value;
+  const feeder = document.getElementById("feeder-select").value;
+
+  if (!sub) {
+    alert("Please select a Substation first.");
+    return;
+  }
+
+  alert(`${type} successful for Substation: ${sub} ${feeder ? '(' + feeder + ')' : ''}`);
 }
 
-function handleLogout() {
+function logout() {
   localStorage.removeItem("rgfms_user");
-  showLogin();
-}
-
-function submitStatusReport() {
-  alert("Status report feature ready to connect!");
+  location.reload();
 }
