@@ -28,10 +28,7 @@ function startLiveClock() {
 }
 
 /**
- * Native GPS helper (Runs without any NPM or local software installation)
- */
-/**
- * Fast & Reliable GPS helper with fallback for WebViews & HTTP
+ * Fast & Reliable GPS helper with detailed error alerts
  */
 function getCurrentLocation() {
   return new Promise((resolve) => {
@@ -53,22 +50,6 @@ function getCurrentLocation() {
       },
       (error) => {
         console.warn("GPS Error Details:", error);
-        if (error.code === error.PERMISSION_DENIED) {
-          alert("Location access is required for attendance. Please allow location access when prompted.");
-        }
-        resolve({ lat: "", lng: "", mapLink: "Location N/A" });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-  });
-}
-      (error) => {
-        console.warn("GPS Error Details:", error);
-        
         let msg = "Could not get location.";
         if (error.code === 1) {
           msg = "Location permission denied. Please allow location access in your browser/app settings.";
@@ -81,7 +62,11 @@ function getCurrentLocation() {
         alert("GPS Notice: " + msg);
         resolve({ lat: "", lng: "", mapLink: "Location N/A" });
       },
-      options
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
     );
   });
 }
